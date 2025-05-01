@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: "terraform"
+    directory: "/tf"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-type: "all"
+        update-type: "version-update:semver-patch"
+
+  - package-ecosystem: "terraform"
+    directory: "/tf"
+    schedule:
+      interval: "monthly"
+    allow:
+      - dependency-type: "all"
+        update-type: "version-update:semver-minor"
