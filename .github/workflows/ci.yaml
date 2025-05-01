@@ -1,0 +1,43 @@
+name: Terraform apply
+
+on:
+  pull_request:
+    paths:
+      - "tf/**"
+      - ".github/workflows/ci.yaml"
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+
+    env:
+      TF_VAR_utxgo_repository_administration_app_id: ${{ secrets.UTXGO_REPOSITORY_ADMINISTRATION_APP_ID }}
+      TF_VAR_utxgo_repository_administration_client_id: ${{ secrets.UTXGO_REPOSITORY_ADMINISTRATION_CLIENT_ID }}
+      TF_VAR_utxgo_repository_administration_private_key: ${{ secrets.UTXGO_REPOSITORY_ADMINISTRATION_PRIVATE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: tf
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -out=plan-${{ github.event.number }}.tfplan
+        working-directory: tf
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.event.number }}
+          path: plan-${{ github.event.number }}.tfplan
+
+      - name: Comment with Terraform Plan
+        uses: peter-evans/commit-comment@v2
+        with:
+          body: |
+            A new Terraform plan has been generated. Please review the plan artifact attached:
+            [Terraform Plan Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).artifact-id }})
