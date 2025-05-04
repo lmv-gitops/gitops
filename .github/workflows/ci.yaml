@@ -26,7 +26,7 @@ jobs:
         working-directory: tf
 
       - name: Terraform Plan
-        run: terraform plan -input=false -out=plan-${{ github.event.number }}.tfplan
+        run: terraform plan -input=false -out=plan-${{ github.event.pull_request.number }}.tfplan
         working-directory: tf
 
       - name: List files in tf directory (debug)
@@ -35,12 +35,15 @@ jobs:
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan-${{ github.event.number }}
-          path: tf/plan-${{ github.event.number }}.tfplan
+          name: terraform-plan-${{ github.event.pull_request.number }}
+          path: tf/plan-${{ github.event.pull_request.number }}.tfplan
 
       - name: Comment with Terraform Plan
-        uses: peter-evans/commit-comment@v2
+        uses: peter-evans/create-or-update-comment@v2
         with:
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
-            A new Terraform plan has been generated. Please review the plan artifact attached:
-            [Terraform Plan Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})  
+            ### Terraform Plan Output
+            ```txt
+            $(terraform show -no-color tf/plan-${{ github.event.pull_request.number }}.tfplan)
+            ```
