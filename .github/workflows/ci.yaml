@@ -1,4 +1,4 @@
-name: Terraform apply
+name: Terraform plan
 
 on:
   pull_request:
@@ -29,15 +29,18 @@ jobs:
         run: terraform plan -input=false -out=plan-${{ github.event.number }}.tfplan
         working-directory: tf
 
+      - name: List files in tf directory (debug)
+        run: ls -alh tf
+
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan-${{ github.event.number }}
-          path: plan-${{ github.event.number }}.tfplan
+          path: tf/plan-${{ github.event.number }}.tfplan
 
       - name: Comment with Terraform Plan
         uses: peter-evans/commit-comment@v2
         with:
           body: |
             A new Terraform plan has been generated. Please review the plan artifact attached:
-            [Terraform Plan Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).artifact-id }})
+            [Terraform Plan Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})  
